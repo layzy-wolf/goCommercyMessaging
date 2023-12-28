@@ -1,0 +1,8 @@
+env: "local"
+storage: "database"
+storage_port: "5432"
+storage_login: "authservice"
+storage_pass: "Auth_Service"
+grpc:
+  port: ":40444"
+  timeout: 10h
