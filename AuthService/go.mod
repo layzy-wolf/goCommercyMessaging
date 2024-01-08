@@ -1,4 +1,4 @@
-module app
+module github.com/layzy-wolf/goCommercyMessaging/AuthService/
 
 go 1.21.3
 
