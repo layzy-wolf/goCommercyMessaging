@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apigateway-app
+  template:
+    metadata:
+      labels:
+        app: apigateway-app
+    spec:
+      containers:
+        - name: apigateway-app
+          image: docker.io/goCommercyChat/APIGateway:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
