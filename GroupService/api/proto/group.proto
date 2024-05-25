@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package group;
+
+option go_package = "group.v1";
+
+service Group {
+  rpc Register(RegisterReq) returns (BoolResp) {}
+  rpc GetCode(GetReq) returns (GetCodeResp) {}
+  rpc AddToGroup(AddReq) returns (BoolResp) {}
+  rpc RemoveFromGroup(RemoveReq) returns (BoolResp) {}
+  rpc GetMembers(GetReq) returns (GetMembersResp) {}
+}
+
+message RegisterReq {
+  string user = 1;
+  string name = 2;
+}
+
+message BoolResp {
+  bool success = 1;
+}
+
+message GetReq {
+  string user = 1;
+  string name = 2;
+}
+
+message GetCodeResp {
+  string code = 1;
+}
+
+message AddReq {
+  string code = 1;
+  string user = 2;
+}
+
+message RemoveReq {
+  string user = 1;
+  string group = 2;
+  string remove = 3;
+}
+
+message GetMembersResp {
+  repeated string members = 1;
+}

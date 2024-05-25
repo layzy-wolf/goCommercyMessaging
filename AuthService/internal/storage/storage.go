@@ -1,33 +1,22 @@
 package storage
 
 import (
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"AuthService/config"
+	"context"
+	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 )
 
-type Store struct {
-	DB *gorm.DB
-}
+func New(cfg *config.Cfg) *mongo.Client {
+	ctx := context.Background()
 
-func New(
-	database string,
-	port string,
-	login string,
-	passwd string) *Store {
-	dsn := "host=" + database + " user=" + login + " password=" + passwd + " dbname=srvices" + " port=" + port + " sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(fmt.Sprintf("mongodb://localhost:%v", cfg.MongoHost)))
 	if err != nil {
 		panic("failed to connect with db")
 	}
 
-	err = db.AutoMigrate(User{})
-	if err != nil {
-		log.Println("Error", "migration failed")
-	}
-
-	return &Store{
-		db,
-	}
+	log.Print("connected to MongoDB")
+	return client
 }

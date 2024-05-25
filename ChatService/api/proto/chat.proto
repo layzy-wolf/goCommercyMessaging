@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "chat.v1";
+
+service Chat {
+  rpc ForwardMessage(stream Message) returns (stream Message) {}
+  rpc GetMessages(GetRequest) returns (ChatMessages) {}
+}
+
+message ChatMessages {
+  repeated Message message = 1;
+}
+
+message GetRequest {
+  string from = 1;
+  string to = 2;
+  int64 limit = 3;
+  string timestamp = 4;
+}
+
+message Message {
+  string messageHead = 1;
+  string messageBody = 2;
+}

@@ -5,34 +5,29 @@ package auth;
 option go_package = "auth.v1;";
 
 service Auth {
-  rpc Register(RegisterRequest) returns (RegisterResponse);
-  rpc Login(LoginRequest) returns (LoginResponse);
-  rpc VerifyAction(VerifyToken) returns (VerifyResponse);
+  rpc Register(UserRequest) returns (BoolResp);
+  rpc Login(UserRequest) returns (LoginResp);
+  rpc Verify(VerifyReq) returns (VerifyResp);
 }
 
-message RegisterRequest {
-  string email = 1;
-  string login = 2;
-  string passwd = 3;
-}
-
-message RegisterResponse {
-  int32 user_id = 1;
-}
-
-message LoginRequest {
-  string email = 1;
+message UserRequest {
+  string login = 1;
   string passwd = 2;
 }
 
-message LoginResponse {
+message BoolResp {
+  bool success = 1;
+}
+
+message LoginResp {
   string token = 1;
 }
 
-message VerifyToken {
+message VerifyReq {
   string token = 1;
 }
 
-message VerifyResponse {
-  bool allowed = 1;
+message VerifyResp {
+  bool success = 1;
+  string user = 2;
 }

@@ -1,0 +1,16 @@
+port: 8080
+
+authService: {
+  port: 40444,
+  timeout: "1h"
+}
+
+chatService: {
+  port: 50051,
+  timeout: "1h"
+}
+
+groupService: {
+  port: 44046,
+  timeout: "1h"
+}
