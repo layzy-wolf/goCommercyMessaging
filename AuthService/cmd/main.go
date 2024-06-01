@@ -1,21 +1,30 @@
-package cmd
+package main
 
 import (
-	"github.com/layzy-wolf/goCommercyMessaging/AuthService/internal/config"
-	"github.com/layzy-wolf/goCommercyMessaging/AuthService/internal/service"
-	"github.com/layzy-wolf/goCommercyMessaging/AuthService/internal/storage"
-	"github.com/layzy-wolf/goCommercyMessaging/AuthService/internal/transport/grpc"
+	"AuthService/config"
+	"AuthService/internal/server"
+	"AuthService/internal/service"
+	"AuthService/internal/storage"
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
 
 func main() {
-	cfg := config.MustLoad()
+	cfg := config.Load()
 
-	store := storage.New(cfg.Storage, cfg.StoragePort, cfg.StorageLogin, cfg.StoragePass)
+	c := storage.New(&cfg)
 
-	s := service.New(store)
+	defer func(c *mongo.Client, ctx context.Context) {
+		err := c.Disconnect(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}(c, context.Background())
 
-	if err := grpc.Engine(cfg, s); err != nil {
+	srv := service.New(c)
+
+	if err := server.Engine(&cfg, srv); err != nil {
 		log.Fatalf("failed to serve %v", err)
 	}
 }

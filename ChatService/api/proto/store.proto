@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package chatStore;
+
+option go_package = "chatStore.v1";
+
+service Store {
+  rpc GetMessages(GetReq) returns (ChatMessages) {}
+  rpc AddMessage(ChatMessage) returns (BoolResp) {}
+  rpc EditMessage(ChatMessage) returns (BoolResp) {}
+  rpc GetUsersFromGroup(Group) returns (Members) {}
+}
+
+message ChatMessage {
+  string from = 1;
+  string message = 2;
+  string to = 3;
+  string timestamp = 4;
+}
+
+message BoolResp {
+  bool successful = 1;
+}
+
+message ChatMessages {
+  repeated ChatMessage messages = 1;
+}
+
+message GetReq {
+  string from = 1;
+  string to = 2;
+  int64 limit = 3;
+  string timestamp = 4;
+}
+
+message Group {
+  string name = 1;
+}
+
+message Members {
+  repeated string name = 1;
+}

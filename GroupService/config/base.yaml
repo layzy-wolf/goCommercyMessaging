@@ -1,0 +1,5 @@
+mongoHost: 27017
+groupService: {
+  port: 44046,
+  timeout: "1h"
+}

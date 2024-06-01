@@ -1,0 +1,5 @@
+env: "local"
+mongoHost: 27017
+grpc:
+  port: 40444
+  timeout: 10h
