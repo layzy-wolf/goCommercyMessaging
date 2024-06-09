@@ -16,7 +16,9 @@ type authService struct {
 }
 
 func NewAuthService(cfg config.Cfg) AuthService {
-	cc, err := grpc.Dial(fmt.Sprintf("localhost:%v", cfg.Auth.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Подключение к сервису авторизации
+
+	cc, err := grpc.Dial(fmt.Sprintf("%v", cfg.Auth.Host), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("E: %v", err)
 	}
@@ -25,27 +27,15 @@ func NewAuthService(cfg config.Cfg) AuthService {
 	return &authService{client: c}
 }
 
-func (s *authService) Register(token string) (bool, error) {
-	j, _ := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return &Secret, nil
-	})
-
-	resp, err := s.client.Register(context.Background(), &pb.UserRequest{
-		Login:  fmt.Sprintf("%v", j.Claims.(jwt.MapClaims)["login"]),
-		Passwd: fmt.Sprintf("%v", j.Claims.(jwt.MapClaims)["password"]),
-	})
-	if err != nil {
-		log.Printf("%v", err)
-		return false, err
-	}
-
-	return resp.Success, err
-}
-
 func (s *authService) Login(token string) (string, error) {
+
+	// Авторизация
+
+	/*
+		Принцип работы: получить токен с логином и паролем с клиентской части,
+		расшифровать его и вызвать функцию Login с сервиса авторизации
+	*/
+
 	j, _ := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -65,6 +55,15 @@ func (s *authService) Login(token string) (string, error) {
 }
 
 func (s *authService) Verify(token string) bool {
-	resp, _ := s.client.Verify(context.Background(), &pb.VerifyReq{Token: token})
+
+	// Аутентификация
+
+	// Принцип работы: Получить токен
+	// и вызвать функцию Verify с сервиса авторизации
+
+	resp, err := s.client.Verify(context.Background(), &pb.VerifyReq{Token: token})
+	if err != nil {
+		return false
+	}
 	return resp.Success
 }

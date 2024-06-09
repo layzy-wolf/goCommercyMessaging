@@ -1,9 +1,10 @@
 chatService: {
-  port: 50051,
-  timeout: "1h"
+  port: 40444,
+  timeout: "1h",
+  storeHost: "localhost:44045"
 }
 storeService: {
-  port: 50052,
+  port: 44045,
   timeout: "1h",
-  mongoPort: 27017
+  mongoHost: localhost:27017
 }

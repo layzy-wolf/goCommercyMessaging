@@ -25,16 +25,27 @@ type Group struct {
 	Code  string   `bson:"code"`
 }
 
-func (s *Server) GetMessages(ctx context.Context, in *pb.GetReq) (*pb.ChatMessages, error) {
-	var res []Message
-	var msg []*pb.ChatMessage
-	var cond bson.M
-	var opts options.FindOptions
+func (s *Server) Test(_ context.Context, in *pb.Bool) (*pb.Bool, error) {
+	log.Println("called")
+	return &pb.Bool{Success: true}, nil
+}
+
+func (s *Server) GetMessages(ctx context.Context, in *pb.GetRequest) (*pb.ChatMessages, error) {
+	var (
+		res  []Message
+		msg  []*pb.ChatMessage
+		cond bson.M
+		opts options.FindOptions
+	)
 
 	col := getCol()
 
-	switch in.Timestamp {
-	case "":
+	opts.SetSort(bson.M{"timestamp": -1})
+	if in.To[0:1] == "&" {
+		cond = bson.M{
+			"to": in.To,
+		}
+	} else {
 		cond = bson.M{
 			"$or": bson.A{
 				bson.M{
@@ -47,48 +58,76 @@ func (s *Server) GetMessages(ctx context.Context, in *pb.GetReq) (*pb.ChatMessag
 				},
 			},
 		}
-
-		opts.SetLimit(in.Limit)
-
-	default:
-		var gr []Group
-
-		timestamp, _ := time.Parse(time.DateTime, in.Timestamp)
-
-		grCol := c.Database("group").Collection("groups")
-
-		grCond := bson.M{
-			"users": bson.M{
-				"$in": bson.A{in.From},
-			},
-		}
-
-		grCur, _ := grCol.Find(ctx, grCond)
-
-		grCur.All(ctx, &gr)
-
-		condArr := bson.A{
-			bson.M{
-				"to": in.From,
-			},
-			bson.M{
-				"from": in.From,
-			},
-		}
-
-		for _, g := range gr {
-			condArr = append(condArr, bson.M{"to": g.Name})
-		}
-
-		cond = bson.M{
-			"$or": condArr,
-			"timestamp": bson.M{
-				"$gte": timestamp,
-			},
-		}
 	}
 
+	opts.SetLimit(in.Limit)
+
 	cur, err := col.Find(ctx, cond, &opts)
+	if err != nil {
+		log.Printf("E: %v", err)
+		return nil, err
+	}
+
+	if err = cur.All(ctx, &res); err != nil {
+		log.Printf("E: %v", err)
+		return nil, err
+	}
+
+	for _, r := range res {
+		msg = append(msg, &pb.ChatMessage{
+			From:      r.From,
+			Message:   r.Message,
+			To:        r.To,
+			Timestamp: fmt.Sprintf("%v", r.Timestamp),
+		})
+	}
+	return &pb.ChatMessages{Messages: msg}, nil
+}
+
+func (s *Server) UpdateChats(ctx context.Context, in *pb.UpdateRequest) (*pb.ChatMessages, error) {
+	var (
+		gr  []Group
+		res []Message
+		msg []*pb.ChatMessage
+	)
+
+	timestamp, _ := time.Parse(time.DateTime, in.Timestamp)
+
+	grCol := c.Database("group").Collection("groups")
+
+	grCond := bson.M{
+		"users": bson.M{
+			"$in": bson.A{in.From},
+		},
+	}
+
+	grCur, _ := grCol.Find(ctx, grCond)
+
+	grCur.All(ctx, &gr)
+
+	condArr := bson.A{
+		bson.M{
+			"to": in.From,
+		},
+		bson.M{
+			"from": in.From,
+		},
+	}
+
+	for _, g := range gr {
+		condArr = append(condArr, bson.M{"to": g.Name})
+	}
+
+	cond := bson.M{
+		"$or": condArr,
+		"timestamp": bson.M{
+			"$gte": timestamp,
+		},
+	}
+
+	col := getCol()
+
+	cur, err := col.Find(ctx, cond)
 	if err != nil {
 		log.Printf("E: %v", err)
 		return nil, err
@@ -136,7 +175,7 @@ func (s *Server) EditMessage(ctx context.Context, in *pb.ChatMessage) (*pb.BoolR
 	}
 
 	col := getCol()
-	_, err := col.UpdateOne(ctx, filter, &msg)
+	_, err := col.UpdateOne(ctx, filter, bson.M{"$set": msg})
 	if err != nil {
 		log.Printf("E: %v", err)
 		return nil, err

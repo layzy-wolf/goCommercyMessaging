@@ -57,7 +57,7 @@ func decodeHTTPAddToGroupRequest(_ context.Context, r *net.Request) (interface{}
 	return request, nil
 }
 
-func decodeHTTPRemoveRequest(_ context.Context, r *net.Request) (interface{}, error) {
+func decodeHTTPRemoveGrRequest(_ context.Context, r *net.Request) (interface{}, error) {
 	var request endpoints.RemoveFromGroupRequest
 	ok, usr, err := verify.Verify(r)
 	if !ok {
@@ -94,7 +94,7 @@ func NewGroupHandler(cfg config.Cfg) *GroupServer {
 		Register:        http.NewServer(en.Register, decodeHTTPGroupRegRequest, encodeHTTPResponse),
 		GetCode:         http.NewServer(en.GetCode, decodeHTTPGetCodeRequest, encodeHTTPResponse),
 		AddToGroup:      http.NewServer(en.AddToGroup, decodeHTTPAddToGroupRequest, encodeHTTPResponse),
-		RemoveFromGroup: http.NewServer(en.RemoveFromGroup, decodeHTTPRemoveRequest, encodeHTTPResponse),
+		RemoveFromGroup: http.NewServer(en.RemoveFromGroup, decodeHTTPRemoveGrRequest, encodeHTTPResponse),
 		GetMembers:      http.NewServer(en.GetMembers, decodeHTTPGetMembersRequest, encodeHTTPResponse),
 	}
 	return handler

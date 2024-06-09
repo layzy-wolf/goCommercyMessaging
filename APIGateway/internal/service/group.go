@@ -15,7 +15,7 @@ type groupService struct {
 }
 
 func NewGroupChatService(cfg config.Cfg) GroupService {
-	cc, err := grpc.Dial(fmt.Sprintf("localhost:%v", cfg.Group.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cc, err := grpc.Dial(fmt.Sprintf("%v", cfg.Group.Host), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("E: %v", err)
 	}

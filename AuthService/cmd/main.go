@@ -11,10 +11,14 @@ import (
 )
 
 func main() {
+
+	// получение конфига
 	cfg := config.Load()
 
+	// инициализация подключения с бд
 	c := storage.New(&cfg)
 
+	// определение функции для отключения от бд, при отключении сервиса
 	defer func(c *mongo.Client, ctx context.Context) {
 		err := c.Disconnect(ctx)
 		if err != nil {
@@ -22,8 +26,10 @@ func main() {
 		}
 	}(c, context.Background())
 
+	// инициализация сервиса
 	srv := service.New(c)
 
+	// запуск сервиса
 	if err := server.Engine(&cfg, srv); err != nil {
 		log.Fatalf("failed to serve %v", err)
 	}

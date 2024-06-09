@@ -14,24 +14,30 @@ var (
 )
 
 type Cfg struct {
-	GatewayPort int         `yaml:"port" port-default:"8080"`
-	Auth        AuthConfig  `yaml:"authService"`
-	Chat        ChatConfig  `yaml:"chatService"`
-	Group       GroupConfig `yaml:"groupService"`
+	GatewayPort int           `yaml:"port" port-default:"8080"`
+	Account     AccountConfig `yaml:"accountService"`
+	Auth        AuthConfig    `yaml:"authService"`
+	Chat        ChatConfig    `yaml:"chatService"`
+	Group       GroupConfig   `yaml:"groupService"`
+}
+
+type AccountConfig struct {
+	Host    string        `yaml:"host" host-default:"localhost:30333"`
+	Timeout time.Duration `yaml:"timeout" timeout-default:"1h"`
 }
 
 type AuthConfig struct {
-	Port    int           `yaml:"port" port-default:"40444"`
+	Host    string        `yaml:"host" host-default:"localhost:40444"`
 	Timeout time.Duration `yaml:"timeout" timeout-default:"1h"`
 }
 
 type ChatConfig struct {
-	Port    int           `yaml:"port" port-default:"440445"`
+	Host    string        `yaml:"host" host-default:"localhost:50051"`
 	Timeout time.Duration `yaml:"timeout" timeout-default:"1h"`
 }
 
 type GroupConfig struct {
-	Port    int           `yaml:"port" port-default:"44046"`
+	Host    string        `yaml:"host" host-default:"localhost:44046"`
 	Timeout time.Duration `yaml:"timeout" timeout-default:"1h"`
 }
 

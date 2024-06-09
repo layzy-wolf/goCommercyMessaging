@@ -7,8 +7,8 @@ import (
 )
 
 type AuthEndpoints struct {
-	Login    endpoint.Endpoint
-	Register endpoint.Endpoint
+	Login  endpoint.Endpoint
+	Verify endpoint.Endpoint
 }
 
 type LoginRequest struct {
@@ -20,22 +20,23 @@ type LoginResponse struct {
 	Error string `json:"error,omitempty"`
 }
 
-type RegisterRequest struct {
+type VerifyRequest struct {
 	Token string `json:"token"`
 }
 
-type RegisterResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error,omitempty"`
+type VerifyResponse struct {
+	Valid bool `json:"valid"`
 }
 
+// Создание экземпляра AuthEndpoints
 func MakeAuthEndpoints(srv service.AuthService) AuthEndpoints {
 	return AuthEndpoints{
-		Login:    MakeLoginEndpoint(srv),
-		Register: MakeRegisterEndpoint(srv),
+		Login:  MakeLoginEndpoint(srv),
+		Verify: MakeVerifyEndpoint(srv),
 	}
 }
 
+// Обертка для сервисного слоя авторизации функции Login
 func MakeLoginEndpoint(srv service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(LoginRequest)
@@ -53,19 +54,12 @@ func MakeLoginEndpoint(srv service.AuthService) endpoint.Endpoint {
 	}
 }
 
-func MakeRegisterEndpoint(srv service.AuthService) endpoint.Endpoint {
+func MakeVerifyEndpoint(srv service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		req := request.(RegisterRequest)
-		success, err := srv.Register(req.Token)
-		if err != nil {
-			return RegisterResponse{
-				Success: success,
-				Error:   err.Error(),
-			}, err
-		}
-		return RegisterResponse{
-			Success: success,
-			Error:   "",
+		req := request.(VerifyRequest)
+		success := srv.Verify(req.Token)
+		return VerifyResponse{
+			Valid: success,
 		}, nil
 	}
 }

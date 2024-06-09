@@ -1,0 +1,21 @@
+port: 8080
+
+accountService: {
+  host: account-service:44042,
+  timeout: "1h"
+}
+
+authService: {
+  host: auth-service:44041,
+  timeout: "1h"
+}
+
+chatService: {
+  host: chat-service:44044,
+  timeout: "1h"
+}
+
+groupService: {
+  host: group-service:44043,
+  timeout: "1h"
+}

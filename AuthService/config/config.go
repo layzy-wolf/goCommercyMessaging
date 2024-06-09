@@ -15,7 +15,7 @@ var (
 
 type Cfg struct {
 	Env       string    `yaml:"env" env-default:"local"`
-	MongoHost int       `yaml:"mongoHost" mongoHost-default:"27017"`
+	MongoHost string    `yaml:"mongoHost" mongoHost-default:"localhost:27017"`
 	GRPConfig GRPConfig `yaml:"grpc"`
 }
 

@@ -24,7 +24,7 @@ func New(client *mongo.Client) *Server {
 func NewStore(cfg *config.Cfg) *mongo.Client {
 	ctx := context.Background()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(fmt.Sprintf("mongodb://localhost:%v", cfg.Store.MongoPort)))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(fmt.Sprintf("mongodb://%v", cfg.Store.MongoHost)))
 	if err != nil {
 		log.Fatalf("E: %v", err)
 	}

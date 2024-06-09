@@ -1,16 +1,21 @@
 port: 8080
 
+accountService: {
+  host: localhost:44042,
+  timeout: "1h"
+}
+
 authService: {
-  port: 40444,
+  host: localhost:44041,
   timeout: "1h"
 }
 
 chatService: {
-  port: 50051,
+  host: localhost:44044,
   timeout: "1h"
 }
 
 groupService: {
-  port: 44046,
+  host: localhost:44043,
   timeout: "1h"
 }

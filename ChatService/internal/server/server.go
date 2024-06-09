@@ -11,9 +11,9 @@ import (
 )
 
 func Engine(serv *service.Server, cfg *config.Cfg) error {
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", cfg.Chat.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", cfg.Chat.Port))
 	if err != nil {
-		log.Fatalf("E: %v", err)
+		return err
 	}
 
 	s := grpc.NewServer()

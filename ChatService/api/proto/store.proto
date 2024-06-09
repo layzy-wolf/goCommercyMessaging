@@ -5,10 +5,12 @@ package chatStore;
 option go_package = "chatStore.v1";
 
 service Store {
-  rpc GetMessages(GetReq) returns (ChatMessages) {}
+  rpc GetMessages(GetRequest) returns (ChatMessages) {}
+  rpc UpdateChats(UpdateRequest) returns (ChatMessages) {}
   rpc AddMessage(ChatMessage) returns (BoolResp) {}
   rpc EditMessage(ChatMessage) returns (BoolResp) {}
   rpc GetUsersFromGroup(Group) returns (Members) {}
+  rpc Test(Bool) returns (Bool) {}
 }
 
 message ChatMessage {
@@ -26,10 +28,15 @@ message ChatMessages {
   repeated ChatMessage messages = 1;
 }
 
-message GetReq {
+message GetRequest {
   string from = 1;
   string to = 2;
   int64 limit = 3;
+}
+
+message UpdateRequest {
+  string from = 1;
+  string to = 2;
   string timestamp = 4;
 }
 
@@ -39,4 +46,8 @@ message Group {
 
 message Members {
   repeated string name = 1;
+}
+
+message Bool {
+  bool success =1;
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.12.4
-// source: api/proto/auth.proto
+// source: proto/auth.proto
 
 package auth_v1
 
@@ -19,18 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Auth_Register_FullMethodName = "/auth.Auth/Register"
-	Auth_Login_FullMethodName    = "/auth.Auth/Login"
-	Auth_Verify_FullMethodName   = "/auth.Auth/Verify"
+	Auth_Login_FullMethodName  = "/auth.Auth/Login"
+	Auth_Verify_FullMethodName = "/auth.Auth/Verify"
+	Auth_Test_FullMethodName   = "/auth.Auth/Test"
 )
 
 // AuthClient is the client API for Auth service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthClient interface {
-	Register(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*BoolResp, error)
 	Login(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*LoginResp, error)
 	Verify(ctx context.Context, in *VerifyReq, opts ...grpc.CallOption) (*VerifyResp, error)
+	Test(ctx context.Context, in *Bool, opts ...grpc.CallOption) (*Bool, error)
 }
 
 type authClient struct {
@@ -39,15 +39,6 @@ type authClient struct {
 
 func NewAuthClient(cc grpc.ClientConnInterface) AuthClient {
 	return &authClient{cc}
-}
-
-func (c *authClient) Register(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*BoolResp, error) {
-	out := new(BoolResp)
-	err := c.cc.Invoke(ctx, Auth_Register_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *authClient) Login(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*LoginResp, error) {
@@ -68,13 +59,22 @@ func (c *authClient) Verify(ctx context.Context, in *VerifyReq, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *authClient) Test(ctx context.Context, in *Bool, opts ...grpc.CallOption) (*Bool, error) {
+	out := new(Bool)
+	err := c.cc.Invoke(ctx, Auth_Test_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
 type AuthServer interface {
-	Register(context.Context, *UserRequest) (*BoolResp, error)
 	Login(context.Context, *UserRequest) (*LoginResp, error)
 	Verify(context.Context, *VerifyReq) (*VerifyResp, error)
+	Test(context.Context, *Bool) (*Bool, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -82,14 +82,14 @@ type AuthServer interface {
 type UnimplementedAuthServer struct {
 }
 
-func (UnimplementedAuthServer) Register(context.Context, *UserRequest) (*BoolResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
-}
 func (UnimplementedAuthServer) Login(context.Context, *UserRequest) (*LoginResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 func (UnimplementedAuthServer) Verify(context.Context, *VerifyReq) (*VerifyResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
+}
+func (UnimplementedAuthServer) Test(context.Context, *Bool) (*Bool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Test not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -102,24 +102,6 @@ type UnsafeAuthServer interface {
 
 func RegisterAuthServer(s grpc.ServiceRegistrar, srv AuthServer) {
 	s.RegisterService(&Auth_ServiceDesc, srv)
-}
-
-func _Auth_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServer).Register(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Auth_Register_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).Register(ctx, req.(*UserRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -158,6 +140,24 @@ func _Auth_Verify_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_Test_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Bool)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).Test(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_Test_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).Test(ctx, req.(*Bool))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -166,10 +166,6 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AuthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Register",
-			Handler:    _Auth_Register_Handler,
-		},
-		{
 			MethodName: "Login",
 			Handler:    _Auth_Login_Handler,
 		},
@@ -177,7 +173,11 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Verify",
 			Handler:    _Auth_Verify_Handler,
 		},
+		{
+			MethodName: "Test",
+			Handler:    _Auth_Test_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/proto/auth.proto",
+	Metadata: "proto/auth.proto",
 }
