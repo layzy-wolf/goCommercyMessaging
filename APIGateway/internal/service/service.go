@@ -5,7 +5,6 @@ import "net/http"
 var Secret = []byte("my-Secret")
 
 type AuthService interface {
-	Register(token string) (bool, error)
 	Login(token string) (string, error)
 	Verify(token string) bool
 }
@@ -22,4 +21,13 @@ type GroupService interface {
 	AddToGroup(token, user string) bool
 	RemoveFromGroup(user, group, remove string) bool
 	GetMembers(name, user string) []string
+}
+
+type AccountService interface {
+	Register(token string) (bool, error)
+	Remove(token string) bool
+	List(token string) ([]string, error)
+	Search(condition string) ([]string, error)
+	AddContact(user, chat string) (bool, error)
+	RemoveContact(user, chat string) (bool, error)
 }

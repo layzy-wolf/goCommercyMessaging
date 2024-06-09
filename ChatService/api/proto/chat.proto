@@ -7,6 +7,7 @@ option go_package = "chat.v1";
 service Chat {
   rpc ForwardMessage(stream Message) returns (stream Message) {}
   rpc GetMessages(GetRequest) returns (ChatMessages) {}
+  rpc Test(Bool) returns (Bool) {}
 }
 
 message ChatMessages {
@@ -23,4 +24,7 @@ message GetRequest {
 message Message {
   string messageHead = 1;
   string messageBody = 2;
+}
+message Bool {
+  bool success =1;
 }

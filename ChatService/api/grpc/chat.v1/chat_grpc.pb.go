@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.12.4
-// source: api/proto/chat.proto
+// source: proto/chat.proto
 
 package chat_v1
 
@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Chat_ForwardMessage_FullMethodName = "/chat.Chat/ForwardMessage"
 	Chat_GetMessages_FullMethodName    = "/chat.Chat/GetMessages"
+	Chat_Test_FullMethodName           = "/chat.Chat/Test"
 )
 
 // ChatClient is the client API for Chat service.
@@ -29,6 +30,7 @@ const (
 type ChatClient interface {
 	ForwardMessage(ctx context.Context, opts ...grpc.CallOption) (Chat_ForwardMessageClient, error)
 	GetMessages(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*ChatMessages, error)
+	Test(ctx context.Context, in *Bool, opts ...grpc.CallOption) (*Bool, error)
 }
 
 type chatClient struct {
@@ -79,12 +81,22 @@ func (c *chatClient) GetMessages(ctx context.Context, in *GetRequest, opts ...gr
 	return out, nil
 }
 
+func (c *chatClient) Test(ctx context.Context, in *Bool, opts ...grpc.CallOption) (*Bool, error) {
+	out := new(Bool)
+	err := c.cc.Invoke(ctx, Chat_Test_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServer is the server API for Chat service.
 // All implementations must embed UnimplementedChatServer
 // for forward compatibility
 type ChatServer interface {
 	ForwardMessage(Chat_ForwardMessageServer) error
 	GetMessages(context.Context, *GetRequest) (*ChatMessages, error)
+	Test(context.Context, *Bool) (*Bool, error)
 	mustEmbedUnimplementedChatServer()
 }
 
@@ -97,6 +109,9 @@ func (UnimplementedChatServer) ForwardMessage(Chat_ForwardMessageServer) error {
 }
 func (UnimplementedChatServer) GetMessages(context.Context, *GetRequest) (*ChatMessages, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+}
+func (UnimplementedChatServer) Test(context.Context, *Bool) (*Bool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Test not implemented")
 }
 func (UnimplementedChatServer) mustEmbedUnimplementedChatServer() {}
 
@@ -155,6 +170,24 @@ func _Chat_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Chat_Test_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Bool)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).Test(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_Test_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).Test(ctx, req.(*Bool))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Chat_ServiceDesc is the grpc.ServiceDesc for Chat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -166,6 +199,10 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetMessages",
 			Handler:    _Chat_GetMessages_Handler,
 		},
+		{
+			MethodName: "Test",
+			Handler:    _Chat_Test_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -175,5 +212,5 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "api/proto/chat.proto",
+	Metadata: "proto/chat.proto",
 }

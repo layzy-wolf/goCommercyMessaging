@@ -20,7 +20,7 @@ type Verify struct {
 }
 
 func NewVerify(cfg config.Cfg) *Verify {
-	cc, err := grpc.Dial(fmt.Sprintf("localhost:%v", cfg.Auth.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cc, err := grpc.Dial(fmt.Sprintf("%v", cfg.Auth.Host), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("E: %v", err)
 	}
@@ -31,7 +31,12 @@ func NewVerify(cfg config.Cfg) *Verify {
 }
 
 func (v *Verify) Verify(r *net.Request) (bool, string, error) {
-	auth := fmt.Sprintf("%v", r.Header.Get("Authorization"))
+	var auth string
+	if r.Header.Get("Authorization") != "" {
+		auth = fmt.Sprintf("%v", r.Header.Get("Authorization"))
+	} else {
+		auth = r.URL.Query()["Authorization"][0]
+	}
 	resp, err := v.client.Verify(context.Background(), &pb.VerifyReq{Token: auth})
 	if err != nil {
 		log.Printf("%v", err)

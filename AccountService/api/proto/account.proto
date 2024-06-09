@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package account;
+
+option go_package = "account.v1";
+
+service Account {
+  rpc Register(RegisterRequest) returns (BoolResponse) {}
+  rpc Remove(UserRequest) returns (BoolResponse) {}
+  rpc List(UserRequest) returns (UsersList) {}
+  rpc Search(SearchRequest) returns (UsersList) {}
+  rpc AddContact(ContactRequest) returns (BoolResponse) {}
+  rpc RemoveContact(ContactRequest) returns (BoolResponse) {}
+}
+
+message RegisterRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message UserRequest {
+  string login = 1;
+}
+
+message SearchRequest {
+  string condition = 1;
+}
+
+message ContactRequest {
+  string user = 1;
+  string chat = 2;
+}
+
+message BoolResponse {
+  bool success = 1;
+}
+
+message UsersList {
+  repeated string user = 1;
+}

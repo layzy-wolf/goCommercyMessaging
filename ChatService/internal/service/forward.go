@@ -21,7 +21,7 @@ func forward(ctx context.Context) {
 		msg, _ := waitMsg()
 		m := unParse(msg)
 
-		if m.to[0:1] == "#" {
+		if m.to[0:1] == "&" {
 			var n []Node
 
 			usrs, err := client.GetUsersFromGroup(ctx, &chat.Group{Name: m.to})
@@ -49,14 +49,16 @@ func forward(ctx context.Context) {
 		} else {
 			n, err := list.Search(m.to)
 
-			if err != nil {
-				log.Printf("E: %v", err)
-			} else {
+			if err == nil {
 				c := *n.Chain
-
 				if err = c.Send(&msg); err != nil {
 					log.Printf("E: %v", err)
 				}
+			}
+			n, err = list.Search(m.from)
+			c := *n.Chain
+			if err = c.Send(&msg); err != nil {
+				log.Printf("E: %v", err)
 			}
 		}
 

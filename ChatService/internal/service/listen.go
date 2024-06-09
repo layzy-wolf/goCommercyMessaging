@@ -11,6 +11,7 @@ func listen(ctx context.Context, stream pb.Chat_ForwardMessageServer) {
 	for {
 		in, err := stream.Recv()
 		if err != nil {
+			log.Printf("%v", err)
 			md, _ := metadata.FromIncomingContext(stream.Context())
 			u := getUserFromMD(md)
 			if err := forget(u); err != nil {

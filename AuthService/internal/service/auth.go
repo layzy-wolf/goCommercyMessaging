@@ -14,40 +14,22 @@ import (
 )
 
 type User struct {
-	Login    string `bson:"login"`
-	Password string `bson:"password"`
-	Token    string `bson:"token"`
-}
-
-func (s *Service) Register(ctx context.Context, in *pb.UserRequest) (*pb.BoolResp, error) {
-	var usr User
-
-	passwd, _ := hash(in.Passwd)
-
-	cond := bson.M{
-		"login": "@" + in.Login,
-	}
-
-	u := User{
-		Login:    "@" + in.Login,
-		Password: passwd,
-		Token:    "",
-	}
-
-	col := getCol()
-	err := col.FindOne(ctx, cond).Decode(&usr)
-	if err == nil {
-		return &pb.BoolResp{Success: false}, errors.New("user is exist")
-	}
-
-	if _, err := col.InsertOne(ctx, u); err != nil {
-		log.Printf("%v", err)
-		return &pb.BoolResp{Success: false}, err
-	}
-	return &pb.BoolResp{Success: true}, nil
+	Login    string   `bson:"login"`
+	Password string   `bson:"password"`
+	Token    string   `bson:"token"`
+	Chats    []string `bson:"chats"`
 }
 
 func (s *Service) Login(ctx context.Context, in *pb.UserRequest) (*pb.LoginResp, error) {
+	// Входные параметры: Логин и пароль пользователя
+
+	/*
+		Принцип работы: Найти пользователя по логину
+		и проверить совпадение его на совпадение паролей
+	*/
+
+	// Выходные данные: jwt Токен авторизации и ошибка
+
 	var usr User
 
 	cond := bson.M{
@@ -88,6 +70,16 @@ func (s *Service) Login(ctx context.Context, in *pb.UserRequest) (*pb.LoginResp,
 }
 
 func (s *Service) Verify(ctx context.Context, in *pb.VerifyReq) (*pb.VerifyResp, error) {
+
+	// Входные параметры: Токен пользователя
+
+	/*
+		Принцип работы: Расшифровать токен авторизации и получить логин пользователя,
+		найти пользователя по логину и сравнить токены
+	*/
+
+	// Выходные данные: булевое значение и ошибка
+
 	var user User
 
 	token, _ := jwt.Parse(in.Token, func(token *jwt.Token) (interface{}, error) {
@@ -96,6 +88,11 @@ func (s *Service) Verify(ctx context.Context, in *pb.VerifyReq) (*pb.VerifyResp,
 		}
 		return &Secret, nil
 	})
+
+	t, _ := time.Parse(time.RFC3339, fmt.Sprintf("%v", token.Claims.(jwt.MapClaims)["time"]))
+	if t.AddDate(0, 1, 0).Before(time.Now()) {
+		return nil, errors.New("token expired")
+	}
 
 	col := getCol()
 	login := fmt.Sprintf("%v", token.Claims.(jwt.MapClaims)["login"])
@@ -117,11 +114,6 @@ func (s *Service) Verify(ctx context.Context, in *pb.VerifyReq) (*pb.VerifyResp,
 
 func getCol() *mongo.Collection {
 	return c.Database("auth").Collection("users")
-}
-
-func hash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
 }
 
 func verify(hashed, password string) bool {

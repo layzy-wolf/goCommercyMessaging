@@ -1,0 +1,10 @@
+chatService: {
+  port: 44044,
+  timeout: "1h",
+  storeHost: "store-service:44045"
+}
+storeService: {
+  port: 44045,
+  timeout: "1h",
+  mongoHost: goChat:chatSecret@db:27017
+}

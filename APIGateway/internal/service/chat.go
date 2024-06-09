@@ -42,7 +42,7 @@ type JWTMsgBody struct {
 }
 
 func NewChatService(cfg config.Cfg) ChatService {
-	cc, err := grpc.Dial(fmt.Sprintf("localhost:%v", cfg.Chat.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cc, err := grpc.Dial(fmt.Sprintf("%v", cfg.Chat.Host), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("E: %v", err)
 	}
@@ -87,6 +87,10 @@ func (s *chatService) ForwardMessage(w http.ResponseWriter, r *http.Request) {
 		WriteBufferSize: 1024,
 	}
 
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
@@ -106,7 +110,7 @@ func (s *chatService) ForwardMessage(w http.ResponseWriter, r *http.Request) {
 
 	cl, err := s.client.ForwardMessage(ctx)
 	if err != nil {
-		log.Printf("%v", err)
+		log.Printf("113 %v", err)
 		cancel()
 	}
 
@@ -123,7 +127,9 @@ func read(ctx context.Context, cancel context.CancelFunc, conn *websocket.Conn, 
 	for {
 		_, p, err := conn.ReadMessage()
 		if err != nil {
-			log.Printf("%v", err)
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseAbnormalClosure) {
+				log.Printf("130 %v", err)
+			}
 			cancel()
 			return
 		}
@@ -160,7 +166,7 @@ func read(ctx context.Context, cancel context.CancelFunc, conn *websocket.Conn, 
 			MessageHead: signedJH,
 			MessageBody: signedJB,
 		}); err != nil {
-			log.Printf("%v", err)
+			log.Printf("167 %v", err)
 			return
 		}
 		select {
@@ -176,7 +182,7 @@ func write(ctx context.Context, cancel context.CancelFunc, conn *websocket.Conn,
 	for {
 		in, err := cl.Recv()
 		if err != nil {
-			log.Printf("%v", err)
+			log.Printf("183 %v", err)
 			cancel()
 			return
 		}
@@ -194,8 +200,9 @@ func write(ctx context.Context, cancel context.CancelFunc, conn *websocket.Conn,
 			log.Printf("%v", err)
 			return
 		}
+
 		if err := conn.WriteMessage(websocket.TextMessage, []byte(s)); err != nil {
-			log.Printf("%v", err)
+			log.Printf("202 %v", err)
 			return
 		}
 		select {

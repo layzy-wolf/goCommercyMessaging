@@ -1,0 +1,75 @@
+version: "3"
+
+networks:
+  db-tier:
+    driver: bridge
+    internal: true
+  default:
+    driver: bridge
+
+services:
+  db:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: goChat
+      MONGO_INITDB_ROOT_PASSWORD: chatSecret
+    networks:
+      - db-tier
+  front-service:
+    build:
+      context: ./FrontService
+      dockerfile: ./deploy/Dockerfile
+    restart: always
+    networks:
+      - db-tier
+      - default
+    ports:
+      - "80:80"
+  api-gateway-service:
+    build:
+      context: .
+      dockerfile: ./APIGateway/deploy/Dockerfile
+    restart: always
+    networks:
+      - db-tier
+      - default
+    ports:
+      - "8080:8080"
+  auth-service:
+    build:
+      context: ./AuthService
+      dockerfile: ./deploy/Dockerfile
+    restart: always
+    networks:
+      - db-tier
+  account-service:
+    build:
+      context: ./AccountService
+      dockerfile: ./deploy/Dockerfile
+    restart: always
+    networks:
+      - db-tier
+  chat-service:
+    build:
+      context: ./ChatService
+      dockerfile: ./deploy/chat.dockerfile
+    restart: always
+    networks:
+      - db-tier
+  store-service:
+    build:
+      context: ./ChatService
+      dockerfile: ./deploy/store.dockerfile
+    ports:
+      - "44046:44046"
+    networks:
+      - db-tier
+      - default
+  group-service:
+    build:
+      context: ./GroupService
+      dockerfile: ./deploy/Dockerfile
+    restart: always
+    networks:
+      - db-tier

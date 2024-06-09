@@ -14,7 +14,7 @@ var (
 )
 
 type Cfg struct {
-	MongoDB int         `yaml:"mongoHost" mongoHost-default:"27017"`
+	MongoDB string      `yaml:"mongoHost" mongoHost-default:"localhost:27017"`
 	Group   GroupConfig `yaml:"groupService"`
 }
 

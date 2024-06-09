@@ -19,14 +19,15 @@ type Cfg struct {
 }
 
 type ChatConfig struct {
-	Port    int           `yaml:"port" port-default:"440445"`
-	Timeout time.Duration `yaml:"timeout" timeout-default:"1h"`
+	Port      int           `yaml:"port" port-default:"440445"`
+	Timeout   time.Duration `yaml:"timeout" timeout-default:"1h"`
+	StoreHost string        `yaml:"storeHost", storeHost-default:"localhost:50052"`
 }
 
 type StoreConfig struct {
 	Port      int           `yaml:"port" port-default:"440446"`
 	Timeout   time.Duration `yaml:"timeout" timeout-default:"1h"`
-	MongoPort int           `yaml:"mongoPort" mongoPort-default:"27017"`
+	MongoHost string        `yaml:"mongoHost" mongoHost-default:"localhost:27017"`
 }
 
 func init() {

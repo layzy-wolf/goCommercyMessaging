@@ -10,7 +10,7 @@ import (
 )
 
 func StoreClient(cfg config.Cfg) (pb.StoreClient, *grpc.ClientConn) {
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%v", cfg.Store.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(fmt.Sprintf("%v", cfg.Chat.StoreHost), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("E: %v", err)
 	}

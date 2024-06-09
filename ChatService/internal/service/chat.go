@@ -14,15 +14,40 @@ import (
 	"syscall"
 )
 
-func (s *Server) GetMessages(ctx context.Context, in *pb.GetRequest) (*pb.ChatMessages, error) {
-	var msg []*pb.Message
+func (s *Server) Test(_ context.Context, in *pb.Bool) (*pb.Bool, error) {
+	log.Println("called")
+	return &pb.Bool{Success: true}, nil
+}
 
-	res, err := client.GetMessages(ctx, &store.GetReq{
-		From:      in.From,
-		To:        in.To,
-		Limit:     in.Limit,
-		Timestamp: in.Timestamp,
-	})
+func (s *Server) GetMessages(ctx context.Context, in *pb.GetRequest) (*pb.ChatMessages, error) {
+
+	// Входные параметры: отправить, получатель, лимит и время
+
+	/*
+		Принцип работы: обраится к сервису-хранилищу и
+		либо зашифровать все сообщения,
+		либо вернуть ошибку
+	*/
+
+	// Выходные данные: массив сообщений и ошибка
+
+	var msg []*pb.Message
+	var err error
+	res := &store.ChatMessages{}
+
+	if in.Timestamp == "" {
+		res, err = client.GetMessages(ctx, &store.GetRequest{
+			From:  in.From,
+			To:    in.To,
+			Limit: in.Limit,
+		})
+	} else {
+		res, err = client.UpdateChats(ctx, &store.UpdateRequest{
+			From:      in.From,
+			To:        in.To,
+			Timestamp: in.Timestamp,
+		})
+	}
 
 	if err != nil {
 		log.Printf("E: %v", err)
@@ -52,6 +77,25 @@ func (s *Server) GetMessages(ctx context.Context, in *pb.GetRequest) (*pb.ChatMe
 }
 
 func (s *Server) ForwardMessage(stream pb.Chat_ForwardMessageServer) error {
+
+	// Входные параметры: stream пользователя
+
+	/*
+		Принцип работы: при вызове получить пользователя из метаинформации
+		и зарегестрировать его во внутреннем связанном списке в системе,
+		после прослушивать его канал связи.
+		func listen - работает для прослушивания,
+		горутина прерывается до получения сообщения,
+		после прерывание спадает, сообщение передается в forward.
+		func forward - работает для передачи,
+		горутина прерывается до получения сообщений,
+		полсе получения сообщения прерывание снимается,
+		в связанном списке находит адресата и отправляет ему сообщение
+		и снова прерывается.
+	*/
+
+	// Выходные данные: ошибка
+
 	ctx, cancel := context.WithCancel(context.Background())
 	done = make(chan bool)
 

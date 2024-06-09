@@ -1,0 +1,5 @@
+mongoHost: goChat:chatSecret@db:27017
+groupService: {
+  port: 44043,
+  timeout: "1h"
+}

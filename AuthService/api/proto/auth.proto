@@ -5,7 +5,6 @@ package auth;
 option go_package = "auth.v1;";
 
 service Auth {
-  rpc Register(UserRequest) returns (BoolResp);
   rpc Login(UserRequest) returns (LoginResp);
   rpc Verify(VerifyReq) returns (VerifyResp);
 }

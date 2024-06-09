@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.12.4
-// source: api/proto/store.proto
+// source: proto/store.proto
 
 package chatStore_v1
 
@@ -20,19 +20,23 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Store_GetMessages_FullMethodName       = "/chatStore.Store/GetMessages"
+	Store_UpdateChats_FullMethodName       = "/chatStore.Store/UpdateChats"
 	Store_AddMessage_FullMethodName        = "/chatStore.Store/AddMessage"
 	Store_EditMessage_FullMethodName       = "/chatStore.Store/EditMessage"
 	Store_GetUsersFromGroup_FullMethodName = "/chatStore.Store/GetUsersFromGroup"
+	Store_Test_FullMethodName              = "/chatStore.Store/Test"
 )
 
 // StoreClient is the client API for Store service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StoreClient interface {
-	GetMessages(ctx context.Context, in *GetReq, opts ...grpc.CallOption) (*ChatMessages, error)
+	GetMessages(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*ChatMessages, error)
+	UpdateChats(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*ChatMessages, error)
 	AddMessage(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*BoolResp, error)
 	EditMessage(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*BoolResp, error)
 	GetUsersFromGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*Members, error)
+	Test(ctx context.Context, in *Bool, opts ...grpc.CallOption) (*Bool, error)
 }
 
 type storeClient struct {
@@ -43,9 +47,18 @@ func NewStoreClient(cc grpc.ClientConnInterface) StoreClient {
 	return &storeClient{cc}
 }
 
-func (c *storeClient) GetMessages(ctx context.Context, in *GetReq, opts ...grpc.CallOption) (*ChatMessages, error) {
+func (c *storeClient) GetMessages(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*ChatMessages, error) {
 	out := new(ChatMessages)
 	err := c.cc.Invoke(ctx, Store_GetMessages_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storeClient) UpdateChats(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*ChatMessages, error) {
+	out := new(ChatMessages)
+	err := c.cc.Invoke(ctx, Store_UpdateChats_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,14 +92,25 @@ func (c *storeClient) GetUsersFromGroup(ctx context.Context, in *Group, opts ...
 	return out, nil
 }
 
+func (c *storeClient) Test(ctx context.Context, in *Bool, opts ...grpc.CallOption) (*Bool, error) {
+	out := new(Bool)
+	err := c.cc.Invoke(ctx, Store_Test_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StoreServer is the server API for Store service.
 // All implementations must embed UnimplementedStoreServer
 // for forward compatibility
 type StoreServer interface {
-	GetMessages(context.Context, *GetReq) (*ChatMessages, error)
+	GetMessages(context.Context, *GetRequest) (*ChatMessages, error)
+	UpdateChats(context.Context, *UpdateRequest) (*ChatMessages, error)
 	AddMessage(context.Context, *ChatMessage) (*BoolResp, error)
 	EditMessage(context.Context, *ChatMessage) (*BoolResp, error)
 	GetUsersFromGroup(context.Context, *Group) (*Members, error)
+	Test(context.Context, *Bool) (*Bool, error)
 	mustEmbedUnimplementedStoreServer()
 }
 
@@ -94,8 +118,11 @@ type StoreServer interface {
 type UnimplementedStoreServer struct {
 }
 
-func (UnimplementedStoreServer) GetMessages(context.Context, *GetReq) (*ChatMessages, error) {
+func (UnimplementedStoreServer) GetMessages(context.Context, *GetRequest) (*ChatMessages, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+}
+func (UnimplementedStoreServer) UpdateChats(context.Context, *UpdateRequest) (*ChatMessages, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateChats not implemented")
 }
 func (UnimplementedStoreServer) AddMessage(context.Context, *ChatMessage) (*BoolResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddMessage not implemented")
@@ -105,6 +132,9 @@ func (UnimplementedStoreServer) EditMessage(context.Context, *ChatMessage) (*Boo
 }
 func (UnimplementedStoreServer) GetUsersFromGroup(context.Context, *Group) (*Members, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersFromGroup not implemented")
+}
+func (UnimplementedStoreServer) Test(context.Context, *Bool) (*Bool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Test not implemented")
 }
 func (UnimplementedStoreServer) mustEmbedUnimplementedStoreServer() {}
 
@@ -120,7 +150,7 @@ func RegisterStoreServer(s grpc.ServiceRegistrar, srv StoreServer) {
 }
 
 func _Store_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetReq)
+	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -132,7 +162,25 @@ func _Store_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: Store_GetMessages_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StoreServer).GetMessages(ctx, req.(*GetReq))
+		return srv.(StoreServer).GetMessages(ctx, req.(*GetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Store_UpdateChats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoreServer).UpdateChats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Store_UpdateChats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoreServer).UpdateChats(ctx, req.(*UpdateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -191,6 +239,24 @@ func _Store_GetUsersFromGroup_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Store_Test_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Bool)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoreServer).Test(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Store_Test_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoreServer).Test(ctx, req.(*Bool))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Store_ServiceDesc is the grpc.ServiceDesc for Store service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -201,6 +267,10 @@ var Store_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMessages",
 			Handler:    _Store_GetMessages_Handler,
+		},
+		{
+			MethodName: "UpdateChats",
+			Handler:    _Store_UpdateChats_Handler,
 		},
 		{
 			MethodName: "AddMessage",
@@ -214,7 +284,11 @@ var Store_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetUsersFromGroup",
 			Handler:    _Store_GetUsersFromGroup_Handler,
 		},
+		{
+			MethodName: "Test",
+			Handler:    _Store_Test_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/proto/store.proto",
+	Metadata: "proto/store.proto",
 }
